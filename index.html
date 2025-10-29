@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SkyScope Weather | Prakiraan Cuaca Harian & Jam-an</title>
+  <meta name="description" content="SkyScope Weather membantu Anda menemukan prakiraan cuaca terkini, harian, dan jam-an untuk kota manapun dengan data dari Open-Meteo dan OpenStreetMap.">
+  <link rel="canonical" href="https://example.com/">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-3fabcyWQOd0H0tLlywM9vrLTMjAU8Gs2KkMqC/7pQoM=" crossorigin="anonymous"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif']
+          },
+          backgroundImage: {
+            'slate-gradient': 'linear-gradient(160deg, rgb(2 6 23) 0%, rgb(15 23 42) 60%, rgb(30 41 59) 100%)'
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-gradient text-slate-100">
+  <header class="sticky top-0 z-30 backdrop-blur bg-slate-950/80 border-b border-slate-800">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6">
+      <a href="index.html" class="flex items-center gap-2 font-semibold text-slate-100">
+        <img src="assets/icons/weather-clear.svg" alt="SkyScope logo" class="h-7 w-7">
+        <span class="text-lg">SkyScope Weather</span>
+      </a>
+      <nav aria-label="Navigasi utama" class="hidden items-center gap-6 md:flex">
+        <a href="index.html" aria-current="page" class="font-medium text-cyan-400">Home</a>
+        <a href="about.html" class="font-medium text-slate-300 hover:text-cyan-300 transition-colors">About</a>
+      </nav>
+      <button id="menuBtn" class="inline-flex items-center rounded-md border border-slate-700 px-3 py-2 text-sm font-medium text-slate-200 transition hover:border-cyan-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 md:hidden" aria-expanded="false" aria-controls="mobileNav">
+        <span class="sr-only">Toggle navigasi</span>
+        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </div>
+    <div id="mobileNav" class="hidden border-t border-slate-800 bg-slate-950/95 md:hidden" role="region" aria-label="Navigasi mobile">
+      <div class="space-y-2 px-4 py-3">
+        <a href="index.html" aria-current="page" class="block rounded-md px-3 py-2 text-sm font-medium text-cyan-400 bg-slate-900/60">Home</a>
+        <a href="about.html" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-900/60 hover:text-cyan-300">About</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-8 md:px-6 md:py-12">
+    <section class="rounded-2xl border border-slate-800/80 bg-slate-900/40 px-6 py-6 shadow-lg backdrop-blur">
+      <div class="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <h1 class="text-3xl font-semibold text-slate-100 md:text-4xl">Pantau Cuaca Kota Anda</h1>
+          <p class="mt-2 max-w-2xl text-base text-slate-300">Cari kota untuk melihat cuaca saat ini, prakiraan 7 hari, dan cuaca per jam. Data diambil langsung menggunakan Fetch API dan async/await.</p>
+        </div>
+        <button id="geoBtn" class="inline-flex items-center justify-center gap-2 rounded-lg border border-slate-700 bg-slate-900/80 px-4 py-2 text-sm font-semibold text-slate-200 transition hover:border-cyan-400 hover:text-cyan-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="m3 12 4.243-4.243a3 3 0 0 1 4.242 0L15.757 12m0 0 1.414 1.414M15.757 12l2.829-2.829a3 3 0 0 1 4.242 0L21 12m-5.243 1.414a3 3 0 1 1-4.242 0"></path>
+          </svg>
+          Gunakan lokasiku
+        </button>
+      </div>
+      <form id="searchForm" class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+        <label for="cityInput" class="sr-only">Cari kota</label>
+        <input id="cityInput" name="city" type="search" required aria-label="Cari kota" placeholder="Cari kota (mis. Malang, Jakarta, Tokyo)" autocomplete="off" class="w-full rounded-lg border border-slate-700 bg-slate-950/50 px-4 py-3 text-base text-slate-100 placeholder:text-slate-500 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:ring-offset-0">
+        <button id="searchBtn" type="submit" class="flex items-center justify-center gap-2 rounded-lg bg-cyan-500 px-4 py-3 text-base font-semibold text-slate-900 transition hover:bg-cyan-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-300 disabled:cursor-not-allowed disabled:opacity-70">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.6" d="m21 21-4.35-4.35m1.35-4.65a6 6 0 1 1-12 0 6 6 0 0 1 12 0Z"></path>
+          </svg>
+          Cari
+        </button>
+      </form>
+    </section>
+
+    <section aria-live="polite" class="grid gap-8">
+      <div id="currentWrapper" class="rounded-2xl border border-slate-800/80 bg-slate-900/50 p-6 shadow-lg backdrop-blur">
+        <div id="currentSkeleton" role="status" aria-label="Memuat cuaca saat ini" class="animate-pulse space-y-4">
+          <div class="h-6 w-40 rounded bg-slate-800/80"></div>
+          <div class="flex flex-wrap gap-6">
+            <div class="h-28 w-28 rounded bg-slate-800/80"></div>
+            <div class="space-y-3">
+              <div class="h-8 w-36 rounded bg-slate-800/80"></div>
+              <div class="h-5 w-24 rounded bg-slate-800/80"></div>
+              <div class="h-4 w-48 rounded bg-slate-800/80"></div>
+            </div>
+          </div>
+          <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="h-20 rounded-lg bg-slate-800/80"></div>
+            <div class="h-20 rounded-lg bg-slate-800/80"></div>
+            <div class="h-20 rounded-lg bg-slate-800/80"></div>
+            <div class="h-20 rounded-lg bg-slate-800/80"></div>
+          </div>
+        </div>
+        <div id="currentWeather" class="hidden">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <div id="dailyWrapper" class="rounded-2xl border border-slate-800/80 bg-slate-900/50 p-6 shadow-lg backdrop-blur">
+        <div class="flex items-center justify-between">
+          <h2 class="text-2xl font-semibold text-slate-100">Prakiraan 7 Hari</h2>
+          <span class="text-sm text-slate-400">Data Open-Meteo</span>
+        </div>
+        <div id="dailySkeleton" role="status" aria-label="Memuat prakiraan harian" class="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+          <div class="h-40 rounded-xl bg-slate-800/70"></div>
+          <div class="h-40 rounded-xl bg-slate-800/70"></div>
+          <div class="h-40 rounded-xl bg-slate-800/70"></div>
+          <div class="h-40 rounded-xl bg-slate-800/70"></div>
+          <div class="h-40 rounded-xl bg-slate-800/70"></div>
+          <div class="h-40 rounded-xl bg-slate-800/70"></div>
+          <div class="h-40 rounded-xl bg-slate-800/70"></div>
+        </div>
+        <div id="dailyForecast" class="mt-5 hidden grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
+          <!-- Rendered dynamically -->
+        </div>
+      </div>
+
+      <div id="hourlyWrapper" class="rounded-2xl border border-slate-800/80 bg-slate-900/50 p-6 shadow-lg backdrop-blur">
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-2xl font-semibold text-slate-100">Cuaca 12 Jam Ke Depan</h2>
+            <p class="text-sm text-slate-400">Per jam, lengkap dengan peluang hujan.</p>
+          </div>
+          <div aria-hidden="true" class="text-sm text-slate-400">°C &middot; km/jam &middot; %</div>
+        </div>
+        <div id="hourlySkeleton" role="status" aria-label="Memuat prakiraan jam" class="mt-6 space-y-4">
+          <div class="h-24 rounded-xl bg-slate-800/70"></div>
+          <div class="h-16 rounded-xl bg-slate-800/70"></div>
+        </div>
+        <div id="hourlyForecast" class="mt-6 hidden space-y-4">
+          <div class="relative overflow-hidden rounded-2xl bg-slate-900/60 p-4 shadow-inner">
+            <svg id="tempSparkline" viewBox="0 0 600 120" class="h-24 w-full text-cyan-400"></svg>
+          </div>
+          <ul id="hourlyList" class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <!-- Rendered dynamically -->
+          </ul>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-800/60 bg-slate-950/80">
+    <div class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-slate-400 md:flex-row md:items-center md:justify-between md:px-6">
+      <span>Data oleh Open-Meteo &amp; OSM Nominatim.</span>
+      <a href="about.html" class="text-cyan-400 hover:text-cyan-300 transition">Pelajari lebih lanjut tentang aplikasi</a>
+    </div>
+  </footer>
+
+  <div id="toast" class="pointer-events-none fixed inset-x-0 bottom-4 z-40 flex justify-center px-4">
+    <div class="hidden max-w-md rounded-xl border border-slate-800 bg-slate-900/95 px-4 py-3 text-sm font-medium text-slate-100 shadow-lg backdrop-blur"></div>
+  </div>
+
+  <script src="js/ui.js" defer></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>

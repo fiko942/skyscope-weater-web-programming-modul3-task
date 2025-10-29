@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tentang SkyScope Weather | Penjelasan Fetch & API</title>
+  <meta name="description" content="Pelajari bagaimana SkyScope Weather memakai Open-Meteo dan Nominatim dengan Fetch API dan async/await untuk menyajikan prakiraan cuaca multipage.">
+  <link rel="canonical" href="https://example.com/about.html">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-3fabcyWQOd0H0tLlywM9vrLTMjAU8Gs2KkMqC/7pQoM=" crossorigin="anonymous"></script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif']
+          },
+          backgroundImage: {
+            'slate-gradient': 'linear-gradient(160deg, rgb(2 6 23) 0%, rgb(15 23 42) 60%, rgb(30 41 59) 100%)'
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="min-h-screen bg-slate-gradient text-slate-100">
+  <header class="sticky top-0 z-30 backdrop-blur bg-slate-950/80 border-b border-slate-800">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:px-6">
+      <a href="index.html" class="flex items-center gap-2 font-semibold text-slate-100">
+        <img src="assets/icons/weather-clear.svg" alt="SkyScope logo" class="h-7 w-7">
+        <span class="text-lg">SkyScope Weather</span>
+      </a>
+      <nav aria-label="Navigasi utama" class="hidden items-center gap-6 md:flex">
+        <a href="index.html" class="font-medium text-slate-300 hover:text-cyan-300 transition-colors">Home</a>
+        <a href="about.html" aria-current="page" class="font-medium text-cyan-400">About</a>
+      </nav>
+      <button id="menuBtn" class="inline-flex items-center rounded-md border border-slate-700 px-3 py-2 text-sm font-medium text-slate-200 transition hover:border-cyan-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan-400 md:hidden" aria-expanded="false" aria-controls="mobileNav">
+        <span class="sr-only">Toggle navigasi</span>
+        <svg class="h-5 w-5" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+          <path d="M3 6h14M3 10h14M3 14h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path>
+        </svg>
+      </button>
+    </div>
+    <div id="mobileNav" class="hidden border-t border-slate-800 bg-slate-950/95 md:hidden" role="region" aria-label="Navigasi mobile">
+      <div class="space-y-2 px-4 py-3">
+        <a href="index.html" class="block rounded-md px-3 py-2 text-sm font-medium text-slate-300 hover:bg-slate-900/60 hover:text-cyan-300">Home</a>
+        <a href="about.html" aria-current="page" class="block rounded-md px-3 py-2 text-sm font-medium text-cyan-400 bg-slate-900/60">About</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="mx-auto flex max-w-5xl flex-col gap-10 px-4 py-10 md:px-6 md:py-14">
+    <section class="rounded-3xl border border-slate-800/80 bg-slate-900/40 p-8 shadow-xl backdrop-blur">
+      <h1 class="text-3xl font-semibold text-slate-100 md:text-4xl">Tentang Aplikasi</h1>
+      <p class="mt-3 text-base text-slate-300 leading-relaxed">SkyScope Weather adalah aplikasi prakiraan cuaca multipage sederhana yang memanfaatkan Fetch API dan async/await untuk menghadirkan data real-time tanpa proses build berat. Semua antarmuka dibangun dengan Tailwind CSS CDN dan interaksi UI memakai jQuery.</p>
+    </section>
+
+    <section class="rounded-3xl border border-slate-800/70 bg-slate-900/40 p-8 shadow-lg backdrop-blur">
+      <h2 class="text-2xl font-semibold text-slate-100">Sumber Data Utama</h2>
+      <div class="mt-6 space-y-6 text-slate-300">
+        <article>
+          <h3 class="text-xl font-semibold text-cyan-300">Nominatim (OpenStreetMap)</h3>
+          <p class="mt-2 leading-relaxed">Ketika pengguna mencari kota, aplikasi mengirim permintaan GET ke Nominatim pada endpoint <code class="rounded bg-slate-800/70 px-1.5 py-0.5">https://nominatim.openstreetmap.org/search</code>. Respons JSON menyediakan koordinat <em>latitude</em> dan <em>longitude</em> serta <em>display_name</em> untuk ditampilkan di antarmuka. API ini tidak membutuhkan kunci dan ramah untuk eksperimen pendidikan.</p>
+        </article>
+        <article>
+          <h3 class="text-xl font-semibold text-cyan-300">Open-Meteo Forecast API</h3>
+          <p class="mt-2 leading-relaxed">Dengan koordinat yang sudah diketahui, aplikasi melakukan permintaan GET kedua ke Open-Meteo <code class="rounded bg-slate-800/70 px-1.5 py-0.5">https://api.open-meteo.com/v1/forecast</code>. Parameter yang digunakan mengaktifkan <em>current_weather</em>, data harian (7 hari), serta data per jam (minimal 12 jam). Open-Meteo dipilih karena gratis, tanpa API key, dan dokumentasinya jelas.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="rounded-3xl border border-slate-800/70 bg-slate-900/40 p-8 shadow-lg backdrop-blur">
+      <h2 class="text-2xl font-semibold text-slate-100">Alur Fetch dengan Async/Await</h2>
+      <ol class="mt-6 space-y-4 text-slate-300 leading-relaxed">
+        <li><span class="font-semibold text-violet-300">1. Ambil input pengguna atau lokasi saat ini</span> — pencarian kota dari form atau koordinat geolokasi.</li>
+        <li><span class="font-semibold text-violet-300">2. <code>await fetch()</code> ke Nominatim</span> — hasil dikonversi ke JSON setelah memeriksa <code>response.ok</code>.</li>
+        <li><span class="font-semibold text-violet-300">3. <code>await fetch()</code> ke Open-Meteo</span> — parameter disusun dinamis, JSON diambil dan divalidasi.</li>
+        <li><span class="font-semibold text-violet-300">4. Transformasi data</span> — memetakan <em>weathercode</em>, memformat angka, dan menyusun struktur kartu.</li>
+        <li><span class="font-semibold text-violet-300">5. Render UI dengan jQuery</span> — skeleton disembunyikan, konten ditampilkan, dan toast akan muncul untuk status.</li>
+        <li><span class="font-semibold text-violet-300">6. Cache di <code>localStorage</code></span> — data terakhir disimpan selama 10 menit untuk pengalaman semi-offline.</li>
+      </ol>
+    </section>
+
+    <section class="rounded-3xl border border-slate-800/70 bg-slate-900/40 p-8 shadow-lg backdrop-blur">
+      <h2 class="text-2xl font-semibold text-slate-100">Mengapa Kombinasi Teknik Ini?</h2>
+      <p class="mt-3 text-slate-300 leading-relaxed">Tailwind CDN mempercepat prototyping tanpa konfigurasi build. jQuery masih relevan untuk manipulasi DOM sederhana, animasi ringan, dan aksesibilitas event di seluruh browser. Fetch API dengan async/await menghasilkan alur kode yang mudah diikuti dan memaksimalkan kemampuan JavaScript modern.</p>
+      <p class="mt-4 text-slate-300 leading-relaxed">Aplikasi ini menjaga aksesibilitas lewat struktur semantik, fokus ring, warna kontras, dan skeleton dengan <code>role="status"</code>. Untuk SEO ringan, halaman memiliki meta description, judul deskriptif, serta tautan internal ke halaman About dan Home.</p>
+    </section>
+  </main>
+
+  <footer class="border-t border-slate-800/60 bg-slate-950/80">
+    <div class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-slate-400 md:flex-row md:items-center md:justify-between md:px-6">
+      <span>SkyScope Weather &middot; Dibuat untuk modul Web Programming.</span>
+      <a href="index.html" class="text-cyan-400 hover:text-cyan-300 transition">Kembali ke halaman utama</a>
+    </div>
+  </footer>
+
+  <div id="toast" class="pointer-events-none fixed inset-x-0 bottom-4 z-40 flex justify-center px-4">
+    <div class="hidden max-w-md rounded-xl border border-slate-800 bg-slate-900/95 px-4 py-3 text-sm font-medium text-slate-100 shadow-lg backdrop-blur"></div>
+  </div>
+
+  <script src="js/ui.js" defer></script>
+  <script src="js/app.js" defer></script>
+</body>
+</html>
