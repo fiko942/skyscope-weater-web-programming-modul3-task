@@ -102,18 +102,18 @@
       timeZoneName: 'short'
     });
     const html = `
-      <div class="flex flex-col gap-6 lg:flex-row lg:items-center">
-        <div class="flex items-center gap-5">
+      <div class="">
+        <div class="flex flex-col items-start gap-5 sm:flex-row sm:items-center">
           <div class="flex h-28 w-28 items-center justify-center rounded-2xl border border-slate-800/60 bg-slate-900/60 shadow-inner">
             <img src="${ICON_BASE + meta.icon}" alt="${meta.label}" class="h-20 w-20">
           </div>
-          <div>
-            <p class="text-sm font-medium text-slate-400">${cityLabel}</p>
+          <div class="space-y-2">
+            <p class="max-w-2xl text-sm font-medium leading-snug text-slate-400">${cityLabel}</p>
             <p class="text-5xl font-semibold text-slate-100 md:text-6xl">${formatTemp(current.temperature)}</p>
             <p class="text-lg font-medium text-cyan-300">${meta.label}</p>
           </div>
         </div>
-        <dl class="grid flex-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <dl class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <div class="rounded-2xl border border-slate-800/70 bg-slate-900/60 p-4 transition hover:-translate-y-1 hover:border-cyan-400 hover:shadow-lg">
             <dt class="flex items-center gap-2 text-sm text-slate-400">
               <img src="${ICON_BASE}weather-wind.svg" alt="" class="h-5 w-5" aria-hidden="true">
