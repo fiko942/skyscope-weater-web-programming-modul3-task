@@ -1,0 +1,219 @@
+{
+  "info": {
+    "_postman_id": "b9c9df72-0b22-4dbe-9a25-512e734d1919",
+    "name": "SkyScope Weather",
+    "description": "Kumpulan request pihak ketiga yang dipakai aplikasi SkyScope Weather. Semua parameter tersimpan langsung di koleksi sehingga tidak perlu environment terpisah.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Geocoding",
+      "item": [
+        {
+          "name": "Cari Kota (Nominatim)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "id-ID,en;q=0.8"
+              },
+              {
+                "key": "User-Agent",
+                "value": "SkyScopeWeatherStudent/1.0 (+https://example.com)"
+              }
+            ],
+            "url": {
+              "raw": "https://nominatim.openstreetmap.org/search?format=json&limit=1&q=Malang",
+              "protocol": "https",
+              "host": [
+                "nominatim",
+                "openstreetmap",
+                "org"
+              ],
+              "path": [
+                "search"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "json"
+                },
+                {
+                  "key": "limit",
+                  "value": "1"
+                },
+                {
+                  "key": "q",
+                  "value": "Malang"
+                }
+              ]
+            },
+            "description": "Cari koordinat dari nama kota menggunakan layanan Nominatim."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response is an array', function () {",
+                  "  pm.expect(Array.isArray(pm.response.json())).to.eql(true);",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reverse Geocode (Nominatim)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept-Language",
+                "value": "id-ID,en;q=0.8"
+              },
+              {
+                "key": "User-Agent",
+                "value": "SkyScopeWeatherStudent/1.0 (+https://example.com)"
+              }
+            ],
+            "url": {
+              "raw": "https://nominatim.openstreetmap.org/reverse?format=json&lat=-7.9797&lon=112.6304",
+              "protocol": "https",
+              "host": [
+                "nominatim",
+                "openstreetmap",
+                "org"
+              ],
+              "path": [
+                "reverse"
+              ],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "json"
+                },
+                {
+                  "key": "lat",
+                  "value": "-7.9797"
+                },
+                {
+                  "key": "lon",
+                  "value": "112.6304"
+                }
+              ]
+            },
+            "description": "Dapatkan nama lokasi manusiawi dari koordinat tertentu."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has display_name', function () {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('display_name');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Weather",
+      "item": [
+        {
+          "name": "Prakiraan Cuaca (Open-Meteo)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "User-Agent",
+                "value": "SkyScopeWeatherStudent/1.0 (+https://example.com)",
+                "disabled": true
+              }
+            ],
+            "url": {
+              "raw": "https://api.open-meteo.com/v1/forecast?latitude=-7.9797&longitude=112.6304&current_weather=true&hourly=temperature_2m,precipitation_probability,relative_humidity_2m,wind_speed_10m,weathercode&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weathercode&forecast_days=7&timezone=auto",
+              "protocol": "https",
+              "host": [
+                "api",
+                "open-meteo",
+                "com"
+              ],
+              "path": [
+                "v1",
+                "forecast"
+              ],
+              "query": [
+                {
+                  "key": "latitude",
+                  "value": "-7.9797"
+                },
+                {
+                  "key": "longitude",
+                  "value": "112.6304"
+                },
+                {
+                  "key": "current_weather",
+                  "value": "true"
+                },
+                {
+                  "key": "hourly",
+                  "value": "temperature_2m,precipitation_probability,relative_humidity_2m,wind_speed_10m,weathercode"
+                },
+                {
+                  "key": "daily",
+                  "value": "temperature_2m_max,temperature_2m_min,precipitation_probability_max,weathercode"
+                },
+                {
+                  "key": "forecast_days",
+                  "value": "7"
+                },
+                {
+                  "key": "timezone",
+                  "value": "auto"
+                }
+              ]
+            },
+            "description": "Ambil data prakiraan cuaca lengkap dari layanan Open-Meteo."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "  pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response contains current_weather', function () {",
+                  "  var jsonData = pm.response.json();",
+                  "  pm.expect(jsonData).to.have.property('current_weather');",
+                  "});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
